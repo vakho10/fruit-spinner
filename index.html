@@ -52,21 +52,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            transition: transform 0.1s linear;
-        }
-
-        .spinner.spinning {
-            animation: spin var(--duration) cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
-        }
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(var(--rotation));
-            }
+            transform-origin: center;
         }
 
         .fruit {
@@ -251,6 +237,7 @@
             // State
             var isSpinning = false;
             var currentRotation = 0;
+            var animationId = null;
 
             // Initialize spinner with fruits
             function initializeSpinner() {
@@ -274,7 +261,12 @@
                 });
             }
 
-            // Spin the wheel
+            // Easing function for smooth deceleration
+            function easeOutCubic(t) {
+                return 1 - Math.pow(1 - t, 3);
+            }
+
+            // Spin the wheel with proper deceleration
             function spin() {
                 if (isSpinning) return;
 
@@ -282,39 +274,54 @@
                 spinButton.disabled = true;
                 result.classList.remove('show');
 
-                // Calculate random spin
+                // Calculate random spin parameters
                 var minSpins = 5;
                 var maxSpins = 8;
                 var spins = Math.random() * (maxSpins - minSpins) + minSpins;
+                var targetRotation = currentRotation + (spins * 360);
+
+                // Add random final angle
                 var randomAngle = Math.random() * 360;
-                var totalRotation = spins * 360 + randomAngle;
+                targetRotation += randomAngle;
 
                 // Calculate which fruit will be selected
-                var normalizedAngle = (360 - (totalRotation % 360) + 90) % 360;
-                var selectedIndex = Math.floor(normalizedAngle / (360 / fruits.length));
+                var finalAngle = targetRotation % 360;
+                var adjustedAngle = (360 - finalAngle + 90) % 360;
+                var selectedIndex = Math.floor(adjustedAngle / (360 / fruits.length));
                 var selectedFruit = fruits[selectedIndex];
 
-                // Set animation variables
-                var duration = 3 + Math.random() * 2; // 3-5 seconds
-                spinner.style.setProperty('--rotation', totalRotation + 'deg');
-                spinner.style.setProperty('--duration', duration + 's');
+                // Animation parameters
+                var duration = 4000; // 4 seconds
+                var startTime = null;
+                var startRotation = currentRotation;
+                var rotationDistance = targetRotation - startRotation;
+
+                // Animation function
+                function animate(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    var elapsed = timestamp - startTime;
+                    var progress = Math.min(elapsed / duration, 1);
+
+                    // Apply easing for smooth deceleration
+                    var easedProgress = easeOutCubic(progress);
+                    var currentAngle = startRotation + (rotationDistance * easedProgress);
+
+                    spinner.style.transform = 'rotate(' + currentAngle + 'deg)';
+
+                    if (progress < 1) {
+                        animationId = requestAnimationFrame(animate);
+                    } else {
+                        // Animation complete
+                        currentRotation = targetRotation;
+                        showResult(selectedFruit);
+                        createConfetti();
+                        isSpinning = false;
+                        spinButton.disabled = false;
+                    }
+                }
 
                 // Start animation
-                spinner.classList.add('spinning');
-
-                // Show result after animation
-                setTimeout(function () {
-                    showResult(selectedFruit);
-                    createConfetti();
-
-                    // Reset for next spin
-                    spinner.classList.remove('spinning');
-                    spinner.style.transform = 'rotate(' + totalRotation + 'deg)';
-                    currentRotation = totalRotation;
-
-                    isSpinning = false;
-                    spinButton.disabled = false;
-                }, duration * 1000);
+                animationId = requestAnimationFrame(animate);
             }
 
             // Show result
