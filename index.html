@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Emoji Spinner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 2px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .spinner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.1s linear;
+        }
+
+        .spinner.spinning {
+            animation: spin var(--duration) cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(var(--rotation));
+            }
+        }
+
+        .fruit {
+            position: absolute;
+            font-size: 40px;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            transform-origin: center;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .fruit:hover {
+            transform: scale(1.2);
+        }
+
+        .pointer {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #ff6b6b;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+            z-index: 10;
+        }
+
+        .spin-button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spin-button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .spin-button:hover:before {
+            left: 100%;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .spin-button:active {
+            transform: translateY(0);
+        }
+
+        .spin-button:disabled {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-text {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .result-emoji {
+            font-size: 2em;
+            margin-left: 10px;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.3);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            position: absolute;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎰 Fruit Spinner 🎰</h1>
+
+        <div class="spinner-container">
+            <div class="pointer"></div>
+            <div class="spinner" id="spinner"></div>
+        </div>
+
+        <button class="spin-button" id="spinButton">Spin the Wheel!</button>
+
+        <div class="result" id="result">
+            <span class="result-text" id="resultText"></span>
+            <span class="result-emoji" id="resultEmoji"></span>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // Fruit emojis array
+            var fruits = ['🍎', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍑', '🍒', '🥝', '🍍', '🥭'];
+
+            // DOM elements
+            var spinner = document.getElementById('spinner');
+            var spinButton = document.getElementById('spinButton');
+            var result = document.getElementById('result');
+            var resultText = document.getElementById('resultText');
+            var resultEmoji = document.getElementById('resultEmoji');
+
+            // State
+            var isSpinning = false;
+            var currentRotation = 0;
+
+            // Initialize spinner with fruits
+            function initializeSpinner() {
+                var angleStep = 360 / fruits.length;
+                var radius = 120;
+
+                fruits.forEach(function (fruit, index) {
+                    var fruitElement = document.createElement('div');
+                    fruitElement.className = 'fruit';
+                    fruitElement.textContent = fruit;
+
+                    var angle = angleStep * index;
+                    var angleRad = (angle - 90) * Math.PI / 180;
+                    var x = Math.cos(angleRad) * radius + 125;
+                    var y = Math.sin(angleRad) * radius + 125;
+
+                    fruitElement.style.left = x + 'px';
+                    fruitElement.style.top = y + 'px';
+
+                    spinner.appendChild(fruitElement);
+                });
+            }
+
+            // Spin the wheel
+            function spin() {
+                if (isSpinning) return;
+
+                isSpinning = true;
+                spinButton.disabled = true;
+                result.classList.remove('show');
+
+                // Calculate random spin
+                var minSpins = 5;
+                var maxSpins = 8;
+                var spins = Math.random() * (maxSpins - minSpins) + minSpins;
+                var randomAngle = Math.random() * 360;
+                var totalRotation = spins * 360 + randomAngle;
+
+                // Calculate which fruit will be selected
+                var normalizedAngle = (360 - (totalRotation % 360) + 90) % 360;
+                var selectedIndex = Math.floor(normalizedAngle / (360 / fruits.length));
+                var selectedFruit = fruits[selectedIndex];
+
+                // Set animation variables
+                var duration = 3 + Math.random() * 2; // 3-5 seconds
+                spinner.style.setProperty('--rotation', totalRotation + 'deg');
+                spinner.style.setProperty('--duration', duration + 's');
+
+                // Start animation
+                spinner.classList.add('spinning');
+
+                // Show result after animation
+                setTimeout(function () {
+                    showResult(selectedFruit);
+                    createConfetti();
+
+                    // Reset for next spin
+                    spinner.classList.remove('spinning');
+                    spinner.style.transform = 'rotate(' + totalRotation + 'deg)';
+                    currentRotation = totalRotation;
+
+                    isSpinning = false;
+                    spinButton.disabled = false;
+                }, duration * 1000);
+            }
+
+            // Show result
+            function showResult(fruit) {
+                resultText.textContent = 'You got: ';
+                resultEmoji.textContent = fruit;
+                result.classList.add('show');
+            }
+
+            // Create confetti effect
+            function createConfetti() {
+                var colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9'];
+
+                for (var i = 0; i < 30; i++) {
+                    setTimeout(function () {
+                        var confetti = document.createElement('div');
+                        confetti.className = 'confetti';
+                        confetti.style.left = Math.random() * window.innerWidth + 'px';
+                        confetti.style.top = '-10px';
+                        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+                        document.body.appendChild(confetti);
+
+                        setTimeout(function () {
+                            confetti.remove();
+                        }, 3000);
+                    }, i * 50);
+                }
+            }
+
+            // Event listeners
+            spinButton.addEventListener('click', spin);
+
+            // Initialize
+            initializeSpinner();
+        })();
+    </script>
+</body>
+
+</html>
