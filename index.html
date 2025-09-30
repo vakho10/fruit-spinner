@@ -38,42 +38,77 @@
 
         .spinner-container {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 320px;
+            height: 320px;
             margin: 0 auto 50px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             border: 2px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .spinner {
             position: absolute;
             width: 100%;
             height: 100%;
-            transform-origin: center;
+            transform-origin: center center;
         }
 
-        .fruit {
+        .fruit-container {
             position: absolute;
-            font-size: 40px;
-            width: 50px;
-            height: 50px;
-            line-height: 50px;
-            text-align: center;
+            width: 60px;
+            height: 60px;
+            left: 50%;
+            top: 50%;
+            margin-left: -30px;
+            margin-top: -30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transform-origin: center;
-            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
             transition: transform 0.3s ease;
         }
 
-        .fruit:hover {
+        .fruit-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            border: 2px solid #c0c0c0;
+            transition: all 0.3s ease;
+        }
+
+        .fruit-container:hover .fruit-circle {
+            background: #f8f8f8;
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .fruit {
+            position: relative;
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+            text-align: center;
+            z-index: 2;
+            filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .fruit-container:hover .fruit {
             transform: scale(1.2);
         }
 
         .pointer {
             position: absolute;
-            right: -30px;
+            right: -35px;
             top: 50%;
             transform: translateY(-50%);
             width: 0;
@@ -242,23 +277,38 @@
             // Initialize spinner with fruits
             function initializeSpinner() {
                 var angleStep = 360 / fruits.length;
-                var radius = 120;
+                var radius = 120; // Perfect radius for 320px container
 
                 fruits.forEach(function (fruit, index) {
+                    // Create container for fruit and circle
+                    var fruitContainer = document.createElement('div');
+                    fruitContainer.className = 'fruit-container';
+
+                    // Create circle behind fruit
+                    var fruitCircle = document.createElement('div');
+                    fruitCircle.className = 'fruit-circle';
+
+                    // Create fruit element
                     var fruitElement = document.createElement('div');
                     fruitElement.className = 'fruit';
                     fruitElement.textContent = fruit;
 
-                    // Position fruits starting from the right (3 o'clock position)
+                    // Calculate position on circle
                     var angle = angleStep * index;
                     var angleRad = angle * Math.PI / 180;
-                    var x = Math.cos(angleRad) * radius + 125;
-                    var y = Math.sin(angleRad) * radius + 125;
 
-                    fruitElement.style.left = x + 'px';
-                    fruitElement.style.top = y + 'px';
+                    // Position fruits in a perfect circle
+                    // All fruits are centered at 50%, 50% then translated
+                    fruitContainer.style.transform = 'translate(' +
+                        (Math.cos(angleRad) * radius) + 'px, ' +
+                        (Math.sin(angleRad) * radius) + 'px)';
 
-                    spinner.appendChild(fruitElement);
+                    // Add circle and fruit to container
+                    fruitContainer.appendChild(fruitCircle);
+                    fruitContainer.appendChild(fruitElement);
+
+                    // Add container to spinner
+                    spinner.appendChild(fruitContainer);
                 });
             }
 
@@ -286,9 +336,14 @@
                 targetRotation += randomAngle;
 
                 // Calculate which fruit will be selected (pointer is on the right)
+                // When spinner rotates clockwise, fruits move to the right
+                // The fruit at the pointer is the one that started at angle -rotation
                 var finalAngle = targetRotation % 360;
-                // Since fruits start at 0 degrees (right position), we can directly use the angle
-                var selectedIndex = Math.floor((360 - finalAngle) / (360 / fruits.length)) % fruits.length;
+                var angleStep = 360 / fruits.length;
+
+                // Find which fruit is now at the pointer position (0 degrees)
+                // Since we rotate clockwise, we need to find the fruit that moved to 0 degrees
+                var selectedIndex = Math.round((360 - finalAngle) / angleStep) % fruits.length;
                 var selectedFruit = fruits[selectedIndex];
 
                 // Animation parameters
