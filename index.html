@@ -73,14 +73,14 @@
 
         .pointer {
             position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
             width: 0;
             height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 40px solid #ff6b6b;
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+            border-right: 40px solid #ff6b6b;
             filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
             z-index: 10;
         }
@@ -249,8 +249,9 @@
                     fruitElement.className = 'fruit';
                     fruitElement.textContent = fruit;
 
+                    // Position fruits starting from the right (3 o'clock position)
                     var angle = angleStep * index;
-                    var angleRad = (angle - 90) * Math.PI / 180;
+                    var angleRad = angle * Math.PI / 180;
                     var x = Math.cos(angleRad) * radius + 125;
                     var y = Math.sin(angleRad) * radius + 125;
 
@@ -284,10 +285,10 @@
                 var randomAngle = Math.random() * 360;
                 targetRotation += randomAngle;
 
-                // Calculate which fruit will be selected
+                // Calculate which fruit will be selected (pointer is on the right)
                 var finalAngle = targetRotation % 360;
-                var adjustedAngle = (360 - finalAngle + 90) % 360;
-                var selectedIndex = Math.floor(adjustedAngle / (360 / fruits.length));
+                // Since fruits start at 0 degrees (right position), we can directly use the angle
+                var selectedIndex = Math.floor((360 - finalAngle) / (360 / fruits.length)) % fruits.length;
                 var selectedFruit = fruits[selectedIndex];
 
                 // Animation parameters
