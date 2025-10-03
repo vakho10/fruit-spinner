@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fruit Emoji Spinner</title>
+    <title>Fruit Emoji Spinner - Weekly Tracker</title>
     <style>
         * {
             margin: 0;
@@ -23,121 +23,78 @@
             overflow: hidden;
         }
 
-        .container {
-            text-align: center;
-            padding: 20px;
-        }
-
-        h1 {
-            color: white;
-            margin-bottom: 40px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        .spinner-container {
+        #gameContainer {
             position: relative;
-            width: 320px;
-            height: 320px;
-            margin: 0 auto 50px;
+            width: 100%;
+            max-width: 1000px;
+            height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        #gameCanvas {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .weekly-tracker {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
+            border-radius: 20px;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             border: 2px solid rgba(255, 255, 255, 0.18);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 20px;
+            min-width: 200px;
+            animation: slideIn 0.8s ease-out;
         }
 
-        .spinner {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            transform-origin: center center;
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        .fruit-container {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            left: 50%;
-            top: 50%;
-            margin-left: -30px;
-            margin-top: -30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform-origin: center;
-            transition: transform 0.3s ease;
-        }
-
-        .fruit-circle {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            border: 2px solid #c0c0c0;
-            transition: all 0.3s ease;
-        }
-
-        .fruit-container:hover .fruit-circle {
-            background: #f8f8f8;
-            transform: scale(1.1);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .fruit {
-            position: relative;
-            font-size: 32px;
-            width: 32px;
-            height: 32px;
-            line-height: 32px;
-            text-align: center;
-            z-index: 2;
-            filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.2));
-            transition: transform 0.3s ease;
-        }
-
-        .fruit-container:hover .fruit {
-            transform: scale(1.2);
-        }
-
-        .pointer {
-            position: absolute;
-            right: -35px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-top: 20px solid transparent;
-            border-bottom: 20px solid transparent;
-            border-right: 40px solid #ff6b6b;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-            z-index: 10;
-        }
-
-        .spin-button {
-            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+        .tracker-title {
             color: white;
-            border: none;
-            padding: 18px 50px;
-            font-size: 1.2em;
+            font-size: 1.3em;
             font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .day-item {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            min-height: 60px;
             position: relative;
             overflow: hidden;
         }
 
-        .spin-button:before {
+        .day-item::before {
             content: '';
             position: absolute;
             top: 0;
@@ -148,273 +105,600 @@
             transition: left 0.5s;
         }
 
-        .spin-button:hover:before {
+        .day-item.highlight::before {
             left: 100%;
         }
 
-        .spin-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+        .day-item.highlight {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
         }
 
-        .spin-button:active {
-            transform: translateY(0);
+        .day-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #333;
+            flex: 1;
         }
 
-        .spin-button:disabled {
-            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
-            cursor: not-allowed;
-            box-shadow: none;
+        .day-item.highlight .day-name {
+            color: white;
         }
 
-        .result {
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            min-height: 80px;
+        .day-result {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateX(20px);
             transition: all 0.5s ease;
         }
 
-        .result.show {
+        .day-result.show {
             opacity: 1;
+            transform: translateX(0);
+        }
+
+        .day-emoji {
+            font-size: 1.8em;
+        }
+
+        .day-fruit-name {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .day-item.highlight .day-fruit-name {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .empty-state {
+            color: #999;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+        .reset-button {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .reset-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .reset-button:active {
             transform: translateY(0);
-        }
-
-        .result-text {
-            font-size: 1.5em;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .result-emoji {
-            font-size: 2em;
-            margin-left: 10px;
-            animation: bounce 0.5s ease;
-        }
-
-        @keyframes bounce {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.3);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            background: #ff6b6b;
-            position: absolute;
-            animation: confetti-fall 3s linear forwards;
-        }
-
-        @keyframes confetti-fall {
-            to {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>🎰 Fruit Spinner 🎰</h1>
-
-        <div class="spinner-container">
-            <div class="pointer"></div>
-            <div class="spinner" id="spinner"></div>
-        </div>
-
-        <button class="spin-button" id="spinButton">Spin the Wheel!</button>
-
-        <div class="result" id="result">
-            <span class="result-text" id="resultText"></span>
-            <span class="result-emoji" id="resultEmoji"></span>
-        </div>
+<div id="gameContainer">
+    <div class="loading">Loading...</div>
+    <div class="weekly-tracker">
+        <div class="tracker-title">📅 This Week's Spins</div>
+        <div id="daysList"></div>
+        <button class="reset-button" id="resetButton">Reset Week</button>
     </div>
+</div>
 
-    <script>
-        (function () {
-            // Fruit emojis array
-            var fruits = ['🍎', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍑', '🍒', '🥝', '🍍', '🥭'];
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fruit data with emojis and names
+        const fruits = [
+            { emoji: '🍎', name: 'Apple' },
+            { emoji: '🍊', name: 'Orange' },
+            { emoji: '🍋', name: 'Lemon' },
+            { emoji: '🍌', name: 'Banana' },
+            { emoji: '🍉', name: 'Watermelon' },
+            { emoji: '🍇', name: 'Grapes' },
+            { emoji: '🍓', name: 'Strawberry' },
+            { emoji: '🍑', name: 'Peach' },
+            { emoji: '🍒', name: 'Cherry' },
+            { emoji: '🥝', name: 'Kiwi' },
+            { emoji: '🍍', name: 'Pineapple' },
+            { emoji: '🥭', name: 'Mango' }
+        ];
 
-            // DOM elements
-            var spinner = document.getElementById('spinner');
-            var spinButton = document.getElementById('spinButton');
-            var result = document.getElementById('result');
-            var resultText = document.getElementById('resultText');
-            var resultEmoji = document.getElementById('resultEmoji');
+        // Days of the week
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-            // State
-            var isSpinning = false;
-            var currentRotation = 0;
-            var animationId = null;
+        // Weekly results storage
+        let weeklyResults = {};
+        let currentDayIndex = 0;
 
-            // Initialize spinner with fruits
-            function initializeSpinner() {
-                var angleStep = 360 / fruits.length;
-                var radius = 120; // Perfect radius for 320px container
+        // Initialize weekly results
+        daysOfWeek.forEach(day => {
+            weeklyResults[day] = null;
+        });
 
-                fruits.forEach(function (fruit, index) {
-                    // Create container for fruit and circle
-                    var fruitContainer = document.createElement('div');
-                    fruitContainer.className = 'fruit-container';
+        // Create DOM elements for weekly tracker
+        function createWeeklyTracker() {
+            const daysList = document.getElementById('daysList');
+            daysList.innerHTML = '';
+
+            daysOfWeek.forEach((day, index) => {
+                const dayItem = document.createElement('div');
+                dayItem.className = 'day-item';
+                dayItem.id = `day-${index}`;
+
+                const dayName = document.createElement('div');
+                dayName.className = 'day-name';
+                dayName.textContent = day;
+
+                const dayResult = document.createElement('div');
+                dayResult.className = 'day-result';
+                dayResult.id = `result-${index}`;
+
+                const emptyState = document.createElement('span');
+                emptyState.className = 'empty-state';
+                emptyState.textContent = 'No spin yet';
+                dayResult.appendChild(emptyState);
+
+                dayItem.appendChild(dayName);
+                dayItem.appendChild(dayResult);
+                daysList.appendChild(dayItem);
+            });
+
+            // Reset button functionality
+            document.getElementById('resetButton').addEventListener('click', resetWeek);
+        }
+
+        function resetWeek() {
+            weeklyResults = {};
+            daysOfWeek.forEach(day => {
+                weeklyResults[day] = null;
+            });
+            currentDayIndex = 0;
+
+            // Clear all results
+            daysOfWeek.forEach((day, index) => {
+                const dayResult = document.getElementById(`result-${index}`);
+                const dayItem = document.getElementById(`day-${index}`);
+                dayResult.innerHTML = '<span class="empty-state">No spin yet</span>';
+                dayResult.classList.remove('show');
+                dayItem.classList.remove('highlight');
+            });
+        }
+
+        function updateWeeklyResult(fruit) {
+            const currentDay = daysOfWeek[currentDayIndex];
+            weeklyResults[currentDay] = fruit;
+
+            // Update DOM
+            const dayResult = document.getElementById(`result-${currentDayIndex}`);
+            const dayItem = document.getElementById(`day-${currentDayIndex}`);
+
+            // Remove highlight from previous day
+            if (currentDayIndex > 0) {
+                const prevDayItem = document.getElementById(`day-${currentDayIndex - 1}`);
+                prevDayItem.classList.remove('highlight');
+            }
+
+            // Update current day
+            dayResult.innerHTML = `
+                    <span class="day-emoji">${fruit.emoji}</span>
+                    <span class="day-fruit-name">${fruit.name}</span>
+                `;
+            dayResult.classList.add('show');
+            dayItem.classList.add('highlight');
+
+            // Move to next day
+            currentDayIndex = (currentDayIndex + 1) % daysOfWeek.length;
+
+            // If we've completed a week, show a message
+            if (currentDayIndex === 0) {
+                setTimeout(() => {
+                    // Could add a "Week Complete!" message here
+                }, 1000);
+            }
+        }
+
+        // Initialize weekly tracker
+        createWeeklyTracker();
+
+        // Phaser Scene Class
+        class SpinnerScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'SpinnerScene' });
+
+                // Initialize scene properties
+                this.spinner = null;
+                this.pointer = null;
+                this.spinButton = null;
+                this.bumps = [];
+                this.fruitContainers = [];
+                this.isSpinning = false;
+                this.currentRotation = 0;
+                this.confettiParticles = null;
+                this.lastBumpIndex = -1;
+                this.pointerBumpTween = null;
+                this.resultContainer = null;
+                this.resultEmoji = null;
+                this.resultText = null;
+                this.resultBackground = null;
+            }
+
+            preload() {
+                // Create a simple texture for confetti
+                const graphics = this.add.graphics();
+                graphics.fillStyle(0xff6b6b);
+                graphics.fillRect(0, 0, 10, 10);
+                graphics.generateTexture('confetti', 10, 10);
+                graphics.destroy();
+            }
+
+            create() {
+                // Hide loading message
+                document.querySelector('.loading').style.display = 'none';
+
+                // Adjust game canvas position
+                this.cameras.main.setPosition(0, 0);
+                this.game.canvas.style.marginLeft = '0';
+
+                // Create the spinner container
+                const centerX = this.cameras.main.width / 2;
+                const centerY = this.cameras.main.height / 2 - 50;
+
+                // Create the background circle for the spinner
+                const spinnerBg = this.add.circle(centerX, centerY, 160, 0xffffff, 0.1);
+                spinnerBg.setStrokeStyle(2, 0xffffff, 0.18);
+
+                // Create the spinner container
+                this.spinner = this.add.container(centerX, centerY);
+
+                // Create the fruit containers
+                const angleStep = 360 / fruits.length;
+                const radius = 120;
+
+                fruits.forEach((fruit, index) => {
+                    const angle = angleStep * index;
+                    const angleRad = angle * Math.PI / 180;
+                    const x = Math.cos(angleRad) * radius;
+                    const y = Math.sin(angleRad) * radius;
+
+                    // Create fruit container
+                    const fruitContainer = this.add.container(x, y);
 
                     // Create circle behind fruit
-                    var fruitCircle = document.createElement('div');
-                    fruitCircle.className = 'fruit-circle';
+                    const fruitCircle = this.add.circle(0, 0, 30, 0xffffff);
+                    fruitCircle.setStrokeStyle(2, 0xc0c0c0);
 
-                    // Create fruit element
-                    var fruitElement = document.createElement('div');
-                    fruitElement.className = 'fruit';
-                    fruitElement.textContent = fruit;
+                    // Create fruit text
+                    const fruitText = this.add.text(0, 0, fruit.emoji, {
+                        fontSize: '32px',
+                        fontFamily: 'Arial'
+                    }).setOrigin(0.5);
 
-                    // Calculate position on circle
-                    var angle = angleStep * index;
-                    var angleRad = angle * Math.PI / 180;
+                    // Add to container
+                    fruitContainer.add([fruitCircle, fruitText]);
+                    this.spinner.add(fruitContainer);
+                    this.fruitContainers.push(fruitContainer);
 
-                    // Position fruits in a perfect circle
-                    // All fruits are centered at 50%, 50% then translated
-                    fruitContainer.style.transform = 'translate(' +
-                        (Math.cos(angleRad) * radius) + 'px, ' +
-                        (Math.sin(angleRad) * radius) + 'px)';
+                    // Add hover effect
+                    fruitCircle.setInteractive();
+                    fruitCircle.on('pointerover', () => {
+                        fruitCircle.setScale(1.1);
+                        fruitText.setScale(1.2);
+                    });
+                    fruitCircle.on('pointerout', () => {
+                        fruitCircle.setScale(1);
+                        fruitText.setScale(1);
+                    });
+                });
 
-                    // Add circle and fruit to container
-                    fruitContainer.appendChild(fruitCircle);
-                    fruitContainer.appendChild(fruitElement);
+                // Create bumps around the wheel
+                const bumpCount = 24;
+                const bumpRadius = 150;
+                const bumpAngleStep = 360 / bumpCount;
 
-                    // Add container to spinner
-                    spinner.appendChild(fruitContainer);
+                for (let i = 0; i < bumpCount; i++) {
+                    const angle = bumpAngleStep * i;
+                    const angleRad = angle * Math.PI / 180;
+                    const x = Math.cos(angleRad) * bumpRadius;
+                    const y = Math.sin(angleRad) * bumpRadius;
+
+                    const bump = this.add.circle(x, y, 6, 0xffd700);
+                    bump.setStrokeStyle(1, 0xffa500);
+                    this.spinner.add(bump);
+                    this.bumps.push(bump);
+                }
+
+                // Create the result display in the center (initially hidden)
+                this.createResultDisplay(centerX, centerY);
+
+                // Create the pointer
+                const pointerGraphics = this.add.graphics();
+                pointerGraphics.fillStyle(0xff6b6b);
+                pointerGraphics.fillTriangle(0, 0, 20, -20, 20, 20);
+                this.pointer = this.add.container(centerX + 160, centerY, [pointerGraphics]);
+
+                // Create the spin button
+                this.spinButton = this.add.text(centerX, centerY + 250, 'SPIN THE WHEEL!', {
+                    fontSize: '24px',
+                    fontFamily: 'Arial',
+                    color: '#ffffff',
+                    backgroundColor: '#ff6b6b',
+                    padding: { x: 20, y: 10 }
+                }).setOrigin(0.5);
+
+                this.spinButton.setInteractive({ useHandCursor: true });
+                this.spinButton.on('pointerdown', () => this.spin());
+                this.spinButton.on('pointerover', () => {
+                    this.spinButton.setStyle({ backgroundColor: '#ff8e53' });
+                });
+                this.spinButton.on('pointerout', () => {
+                    this.spinButton.setStyle({ backgroundColor: '#ff6b6b' });
+                });
+
+                // Create particle system for confetti
+                this.confettiParticles = this.add.particles('confetti');
+            }
+
+            createResultDisplay(x, y) {
+                // Create the circular result container
+                this.resultContainer = this.add.container(x, y);
+                this.resultContainer.setAlpha(0);
+                this.resultContainer.setScale(0);
+
+                // Create background circle
+                this.resultBackground = this.add.circle(0, 0, 80, 0xffffff, 0.95);
+                this.resultBackground.setStrokeStyle(3, 0xff6b6b);
+
+                // Create result text
+                this.resultText = this.add.text(0, -20, 'You got:', {
+                    fontSize: '18px',
+                    fontFamily: 'Arial',
+                    color: '#333333',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5);
+
+                // Create result emoji
+                this.resultEmoji = this.add.text(0, 15, '', {
+                    fontSize: '48px',
+                    fontFamily: 'Arial'
+                }).setOrigin(0.5);
+
+                // Create fruit name
+                this.resultName = this.add.text(0, 50, '', {
+                    fontSize: '20px',
+                    fontFamily: 'Arial',
+                    color: '#555555',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5);
+
+                // Add all elements to container
+                this.resultContainer.add([
+                    this.resultBackground,
+                    this.resultText,
+                    this.resultEmoji,
+                    this.resultName
+                ]);
+
+                // Add to scene at the correct depth (above spinner but below button)
+                this.add.existing(this.resultContainer);
+                this.resultContainer.setDepth(10);
+            }
+
+            update() {
+                // This is called every frame
+                // We can add continuous effects here if needed
+            }
+
+            spin() {
+                if (this.isSpinning) return;
+
+                this.isSpinning = true;
+                this.spinButton.setAlpha(0.5);
+                this.spinButton.disableInteractive();
+                this.hideResult();
+                this.lastBumpIndex = -1;
+
+                // Calculate random spin parameters
+                const minSpins = 5;
+                const maxSpins = 8;
+                const spins = Math.random() * (maxSpins - minSpins) + minSpins;
+                const targetRotation = this.currentRotation + (spins * 360);
+
+                // Add random final angle
+                const randomAngle = Math.random() * 360;
+                const finalTargetRotation = targetRotation + randomAngle;
+
+                // Calculate which fruit will be selected
+                const finalAngle = finalTargetRotation % 360;
+                const angleStep = 360 / fruits.length;
+                const selectedIndex = Math.round((360 - finalAngle) / angleStep) % fruits.length;
+                const selectedFruit = fruits[selectedIndex];
+
+                // Create the spinning animation with easing
+                const duration = 4000; // 4 seconds
+                const spinTween = this.tweens.add({
+                    targets: this.spinner,
+                    angle: finalTargetRotation,
+                    duration: duration,
+                    ease: 'Cubic.easeOut', // Smooth deceleration
+                    onUpdate: (tween) => {
+                        this.currentRotation = tween.getValue();
+
+                        // Add bump effects during the first 90% of the animation
+                        const progress = tween.progress;
+                        if (progress < 0.9) {
+                            this.checkBumpEffect();
+                        }
+                    },
+                    onComplete: () => {
+                        this.currentRotation = finalTargetRotation;
+                        this.showResult(selectedFruit);
+                        this.createConfetti();
+
+                        // Update weekly tracker
+                        updateWeeklyResult(selectedFruit);
+
+                        this.isSpinning = false;
+                        this.spinButton.setAlpha(1);
+                        this.spinButton.setInteractive();
+                    }
+                });
+
+                // Add pointer bump effect
+                this.pointerBumpTween = this.tweens.add({
+                    targets: this.pointer,
+                    x: this.pointer.x - 5,
+                    angle: -5,
+                    duration: 100,
+                    yoyo: true,
+                    repeat: -1,
+                    paused: false
+                });
+
+                // Stop pointer bump effect when spinning slows down
+                this.time.delayedCall(duration * 0.9, () => {
+                    if (this.pointerBumpTween) {
+                        this.pointerBumpTween.stop();
+                        this.pointer.x = this.cameras.main.width / 2 + 160;
+                        this.pointer.angle = 0;
+                    }
                 });
             }
 
-            // Easing function for smooth deceleration
-            function easeOutCubic(t) {
-                return 1 - Math.pow(1 - t, 3);
+            checkBumpEffect() {
+                const bumpAngleStep = 360 / this.bumps.length;
+                const normalizedAngle = ((this.currentRotation % 360) + 360) % 360;
+                const bumpIndex = Math.floor(normalizedAngle / bumpAngleStep);
+
+                // Only trigger effect when passing a new bump
+                if (bumpIndex !== this.lastBumpIndex) {
+                    this.lastBumpIndex = bumpIndex;
+
+                    // Activate bump visual effect
+                    const bump = this.bumps[bumpIndex];
+                    bump.setFillStyle(0xff6b6b);
+                    bump.setScale(1.5);
+
+                    this.time.delayedCall(100, () => {
+                        bump.setFillStyle(0xffd700);
+                        bump.setScale(1);
+                    });
+                }
             }
 
-            // Spin the wheel with proper deceleration
-            function spin() {
-                if (isSpinning) return;
+            showResult(fruit) {
+                // Update result content
+                this.resultEmoji.setText(fruit.emoji);
+                this.resultName.setText(fruit.name);
 
-                isSpinning = true;
-                spinButton.disabled = true;
-                result.classList.remove('show');
-
-                // Calculate random spin parameters
-                var minSpins = 5;
-                var maxSpins = 8;
-                var spins = Math.random() * (maxSpins - minSpins) + minSpins;
-                var targetRotation = currentRotation + (spins * 360);
-
-                // Add random final angle
-                var randomAngle = Math.random() * 360;
-                targetRotation += randomAngle;
-
-                // Calculate which fruit will be selected (pointer is on the right)
-                // When spinner rotates clockwise, fruits move to the right
-                // The fruit at the pointer is the one that started at angle -rotation
-                var finalAngle = targetRotation % 360;
-                var angleStep = 360 / fruits.length;
-
-                // Find which fruit is now at the pointer position (0 degrees)
-                // Since we rotate clockwise, we need to find the fruit that moved to 0 degrees
-                var selectedIndex = Math.round((360 - finalAngle) / angleStep) % fruits.length;
-                var selectedFruit = fruits[selectedIndex];
-
-                // Animation parameters
-                var duration = 4000; // 4 seconds
-                var startTime = null;
-                var startRotation = currentRotation;
-                var rotationDistance = targetRotation - startRotation;
-
-                // Animation function
-                function animate(timestamp) {
-                    if (!startTime) startTime = timestamp;
-                    var elapsed = timestamp - startTime;
-                    var progress = Math.min(elapsed / duration, 1);
-
-                    // Apply easing for smooth deceleration
-                    var easedProgress = easeOutCubic(progress);
-                    var currentAngle = startRotation + (rotationDistance * easedProgress);
-
-                    spinner.style.transform = 'rotate(' + currentAngle + 'deg)';
-
-                    if (progress < 1) {
-                        animationId = requestAnimationFrame(animate);
-                    } else {
-                        // Animation complete
-                        currentRotation = targetRotation;
-                        showResult(selectedFruit);
-                        createConfetti();
-                        isSpinning = false;
-                        spinButton.disabled = false;
+                // Animate the result appearance
+                this.tweens.add({
+                    targets: this.resultContainer,
+                    alpha: 1,
+                    scaleX: 1,
+                    scaleY: 1,
+                    duration: 500,
+                    ease: 'Back.easeOut',
+                    onComplete: () => {
+                        // Add a subtle pulse animation
+                        this.tweens.add({
+                            targets: this.resultBackground,
+                            scaleX: 1.05,
+                            scaleY: 1.05,
+                            duration: 1000,
+                            yoyo: true,
+                            repeat: -1,
+                            ease: 'Sine.easeInOut'
+                        });
                     }
+                });
+
+                // Animate the emoji with a bounce
+                this.tweens.add({
+                    targets: this.resultEmoji,
+                    scaleX: 1.3,
+                    scaleY: 1.3,
+                    duration: 300,
+                    ease: 'Back.easeOut',
+                    yoyo: true,
+                    repeat: 0
+                });
+            }
+
+            hideResult() {
+                // Hide the result with animation
+                this.tweens.add({
+                    targets: this.resultContainer,
+                    alpha: 0,
+                    scaleX: 0,
+                    scaleY: 0,
+                    duration: 300,
+                    ease: 'Back.easeIn'
+                });
+            }
+
+            createConfetti() {
+                // Create confetti particles
+                const colors = [0xff6b6b, 0x4ecdc4, 0x45b7d1, 0x96ceb4, 0xffeaa7, 0xdfe6e9];
+
+                const emitter = this.confettiParticles.createEmitter({
+                    x: { min: 100, max: 700 },
+                    y: 0,
+                    lifespan: 3000,
+                    speedY: { min: 100, max: 300 },
+                    speedX: { min: -50, max: 50 },
+                    gravityY: 200,
+                    scale: { start: 1, end: 0.5 },
+                    quantity: 30,
+                    frequency: 50,
+                    tint: colors,
+                    blendMode: 'NORMAL',
+                    on: false
+                });
+
+                // Start the emitter
+                emitter.start();
+
+                // Stop the emitter after all particles are emitted
+                this.time.delayedCall(1500, () => {
+                    emitter.stop();
+                });
+            }
+        }
+
+        // Game configuration
+        const config = {
+            type: Phaser.AUTO,
+            width: 700,
+            height: 600,
+            parent: 'gameContainer',
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+            scene: [SpinnerScene],
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 300 },
+                    debug: false
                 }
-
-                // Start animation
-                animationId = requestAnimationFrame(animate);
             }
+        };
 
-            // Show result
-            function showResult(fruit) {
-                resultText.textContent = 'You got: ';
-                resultEmoji.textContent = fruit;
-                result.classList.add('show');
-            }
-
-            // Create confetti effect
-            function createConfetti() {
-                var colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9'];
-
-                for (var i = 0; i < 30; i++) {
-                    setTimeout(function () {
-                        var confetti = document.createElement('div');
-                        confetti.className = 'confetti';
-                        confetti.style.left = Math.random() * window.innerWidth + 'px';
-                        confetti.style.top = '-10px';
-                        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-                        confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
-                        document.body.appendChild(confetti);
-
-                        setTimeout(function () {
-                            confetti.remove();
-                        }, 3000);
-                    }, i * 50);
-                }
-            }
-
-            // Event listeners
-            spinButton.addEventListener('click', spin);
-
-            // Initialize
-            initializeSpinner();
-        })();
-    </script>
+        // Initialize the game
+        const game = new Phaser.Game(config);
+    });
+</script>
 </body>
 
 </html>
